@@ -22,6 +22,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 ]
 
+
+# append to out url pans the url mapping for the media files. This means we can access the media files when we are 
+# running our development server for local development. Put it in an if statement so it only occurs in development. In
+# In production the nginx proxy will handle managing those urls and not our django app.
 if settings.DEBUG:
     urlpatterns += static(
         settings.MEDIA_URL,

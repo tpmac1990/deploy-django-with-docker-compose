@@ -128,4 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+
+# don't commit the media files
 /data

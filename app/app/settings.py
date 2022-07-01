@@ -20,12 +20,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+# environment variables are stored in the docker-compose.yml file
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(int(os.environ.get('DEBUG', 0)))
 
 ALLOWED_HOSTS = []
+# filter out all 'None' values
+# default to '' so we don't have to provide ALLOWED_HOSTS in the docker-compose file for development
 ALLOWED_HOSTS.extend(
     filter(
         None,
@@ -127,9 +130,21 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = '/static/static/'
-MEDIA_URL = '/static/media/'
+# url prefixes that are going to be used when the django app generates urls for the static and media files.
+# this sets up a url structure that we can then use to configure our proxy to catch all of these different urls.
+# that will allow use to capture those urls and forward them to the location where those files are and send the rest
+# of the requests to the django application. 
+STATIC_URL = '/static/static/' # anything used in templates
+MEDIA_URL = '/static/media/' # media files uploaded by the user
 
+# set the root directories in the django app that we want to store these files. This is where these files are going to 
+# be stored on the file system. It has nothing to do with the urls that get served. Media root says if we upload any 
+# media files to the django application, store them in /vol/web/media. 
+# when we run the 'collectstatic' command, it's going to place them in /vol/web/static.
+# So, we can take this location and map it to the proxy image which can then access the files and then serve them directly
+# from the proxy without sending them to the app. The catch is that django doesn't serve the media files by default in the 
+# development server. So there is a small change we need to make to the application so that it serves the media files when 
+# we're doing the django development server for development services.
 MEDIA_ROOT = '/vol/web/media'
 STATIC_ROOT = '/vol/web/static'
 

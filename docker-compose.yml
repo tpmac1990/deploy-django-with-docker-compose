@@ -1,30 +1,50 @@
+# this is only for development. create a separate docker compose for deployment
+
+# version of the docker compose syntax being used. Best to use the latest version
 version: '3.9'
 
+# these are the services that will make up our environment. 'app' and 'db' are 2 services
 services:
   app:
     build:
+      # . means to build from the current directory
       context: .
+    # override the command used to start the docker container when using 'docker-compose up'. 
+    # wait_for_db: waits for db to be started before starting app. find at app/core/management/commands/wait_for_db.py
     command: >
       sh -c "python manage.py wait_for_db &&
              python manage.py migrate &&
              python manage.py runserver 0.0.0.0:8000"
+    # ports mapping. map port 8000 in the container to port 8000 on the host (our machine).
+    # this allows us to access the application via this port from our local machine when it is running inside docker
     ports:
       - 8000:8000
+    # only required for development. It copies the changes made to files on the local machine over to the docker container so 
+    # changes are immediately reflected in the container. Not required for deployment as we will rebuild only when deploying
     volumes:
       - ./app:/app
+      # map this web volume that is created in the docker file to the data/web directory inside out project. Do this for the 
+      # development server so we can see the files being changed in the directory as we are running the code. Allows us to see where the media files
+      # are being stored and that they are being stored in the correct place. This will be handled differently in production.
+      # make sure to add /data to .gitignore
+      # in Dockerfile: chown -R app:app /vol
       - ./data/web:/vol/web
     environment:
       - SECRET_KEY=devsecretkey
       - DEBUG=1
-      - DB_HOST=db
+      - DB_HOST=db # the name of the service to connect to. How the app connects to the db
       - DB_NAME=devdb
       - DB_USER=devuser
       - DB_PASS=changeme
+    # make sure all 'depends_on' services start bfore this service
+    # there should be a connection between the app and the db container
     depends_on:
       - db
 
-  db:
-    image: postgres:13-alpine
+  # define a second service called db. https://hub.docker.com/_/postgres
+  db: # this is what DB_HOST needs to be equal to
+    image: postgres:13-alpine # runs a version of postgres
+    # set the database environment variables. 
     environment:
       - POSTGRES_DB=devdb
       - POSTGRES_USER=devuser

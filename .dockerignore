@@ -1,3 +1,5 @@
+# exclude these files/ folders form the docker build context
+
 # Git
 .git
 .gitignore

@@ -4,8 +4,11 @@ services:
   app:
     build:
       context: .
+    # application will automatically restart if it crashes
     restart: always
     volumes:
+      # use a named volume for the static files so instead of mapping to a specific file for you it will handle the mapping of that file
+      # behind the scenes and store it somewhere in the system in an efficient way.
       - static-data:/vol/web
     environment:
       - DB_HOST=db
@@ -21,6 +24,8 @@ services:
     image: postgres:13-alpine
     restart: always
     volumes:
+      # named volumne. We do this so in production if we close down a container then we won't lose the data from the database. It will
+      #   be persisted in a volume
       - postgres-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=${DB_NAME}
@@ -29,15 +34,20 @@ services:
 
   proxy:
     build:
+      # set the context to the proxy directory
       context: ./proxy
     restart: always
     depends_on:
       - app
     ports:
+      # 80 is the default http port. Accept on 80 in the proxy and forward to 8000 in the container
       - 80:8000
     volumes:
+      # static-data should match the named volume in app volumes. So we have a shared volume that both the app and the proxy can access.
+      #   this is how the proxy is abe to serve the staticfiles without bothering the applications python code.
       - static-data:/vol/static
 
+# define the named volumes
 volumes:
   postgres-data:
   static-data:
