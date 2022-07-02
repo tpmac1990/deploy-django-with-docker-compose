@@ -41,11 +41,17 @@ commit changes to github
 `docker-compose -f docker-compose-deploy.yml build app` app is the name of the service
 `docker-compose -f docker-compose-deploy.yml up --no-deps -d app` replace app with new version but not affect any dependencies
 
-### other commands
+### docker commands
 logs: `docker-compose -f docker-compose-deploy.yml logs`
 list all containers: `docker ps -a`
 re-attach container: `docker attach <id>`
 stop container by id: `docker stop <id>`
+all local images: `docker images`
+create + start image: `docker run image_id`
+running container status: `docker ps`
+start a stopped container: `docker start image_id`
+pull an image from docker compose: `docker pull image_id`
+delete an image: `docker image rm image_id`
 
 
 ## links
