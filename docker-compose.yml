@@ -4,6 +4,8 @@ services:
   app:
     build:
       context: .
+    # this allows you to reference the name rather than its long id
+    # container_name: django
     command: >
       sh -c "python manage.py wait_for_db &&
              python manage.py migrate &&
@@ -20,12 +22,46 @@ services:
       - DB_NAME=devdb
       - DB_USER=devuser
       - DB_PASS=changeme
+      # 6379 is the default port for redis
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
     depends_on:
       - db
+      - redis
 
   db:
     image: postgres:13-alpine
+    # container_name: pgdb
     environment:
       - POSTGRES_DB=devdb
       - POSTGRES_USER=devuser
       - POSTGRES_PASSWORD=changeme
+    # volumes:
+    #   - pgdata:/var/lib/postgresql/data/
+
+  celery:
+    build: .
+    # celery worker --app=core --loglevel=INFO
+    # -A core: app = Celery('core') in app/core/celery.py
+    command: celery -A app.core worker -l INFO
+    volumes:
+    # this is .:/app in the video
+      - ./app:/app
+    environment:
+      - DEBUG=1
+      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+    depends_on:
+      # - django
+      - app
+      - redis
+      - db
+
+  redis:
+    image: "redis:alpine"
+    # depends_on:
+    #   - db
+
+# volumes:
+#   pgdata:
