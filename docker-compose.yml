@@ -13,6 +13,9 @@ services:
     volumes:
       - ./app:/app
       - ./data/web:/vol/web
+    # use 'env_file' replace the 'environment' tag. 
+    # env_file:
+    #   - ./.env.dev
     environment:
       - SECRET_KEY=devsecretkey
       - DEBUG=1
@@ -29,3 +32,29 @@ services:
       - POSTGRES_DB=devdb
       - POSTGRES_USER=devuser
       - POSTGRES_PASSWORD=changeme
+    # ports:
+    #   - "5432:5432"
+
+  redis:
+    image: redis:alpine
+
+  celery:
+    restart: always
+    build:
+      context: .
+    command: celery -A app worker -l info
+    volumes:
+      - ./app:/app
+    # env_file:
+    #   - ./.env.dev
+    environment:
+      - SECRET_KEY=devsecretkey
+      - DEBUG=1
+      - DB_HOST=db
+      - DB_NAME=devdb
+      - DB_USER=devuser
+      - DB_PASS=changeme
+    depends_on:
+      - db
+      - redis
+      - app
