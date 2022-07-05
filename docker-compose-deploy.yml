@@ -2,6 +2,7 @@ version: "3.9"
 
 services:
   app:
+    container_name: app
     build:
       context: .
     restart: always
@@ -19,6 +20,7 @@ services:
 
   db:
     image: postgres:13-alpine
+    container_name: db
     restart: always
     volumes:
       - postgres-data:/var/lib/postgresql/data
@@ -28,6 +30,7 @@ services:
       - POSTGRES_PASSWORD=${DB_PASS}
 
   proxy:
+    container_name: proxy
     build:
       context: ./proxy
     restart: always
@@ -40,8 +43,10 @@ services:
 
   redis:
     image: redis:alpine
+    container_name: redis
 
   celery:
+    container_name: celery
     restart: always
     build:
       context: .

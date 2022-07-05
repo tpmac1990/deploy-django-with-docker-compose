@@ -2,6 +2,7 @@ version: '3.9'
 
 services:
   app:
+    container_name: app
     build:
       context: .
     command: >
@@ -13,9 +14,6 @@ services:
     volumes:
       - ./app:/app
       - ./data/web:/vol/web
-    # use 'env_file' replace the 'environment' tag. 
-    # env_file:
-    #   - ./.env.dev
     environment:
       - SECRET_KEY=devsecretkey
       - DEBUG=1
@@ -28,25 +26,26 @@ services:
 
   db:
     image: postgres:13-alpine
+    container_name: db
     environment:
       - POSTGRES_DB=devdb
       - POSTGRES_USER=devuser
       - POSTGRES_PASSWORD=changeme
-    # ports:
-    #   - "5432:5432"
+    ports:
+      - "5432:5432"
 
   redis:
     image: redis:alpine
+    container_name: redis
 
   celery:
     restart: always
+    container_name: celery
     build:
       context: .
     command: celery -A app worker -l info
     volumes:
       - ./app:/app
-    # env_file:
-    #   - ./.env.dev
     environment:
       - SECRET_KEY=devsecretkey
       - DEBUG=1

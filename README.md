@@ -9,6 +9,7 @@ tutorial video: `https://www.youtube.com/watch?v=mScd-Pc_pX0`
 
 ## start app locally for development
 `cd Documents/terry/projects/deploy-django-with-docker-compose`
+`docker-compose down --volumes --remove-orphans` basically a reset
 `docker-compose build`
 `docker-compose up`
 `docker-compose run --rm app sh -c "python manage.py createsuperuser"`
@@ -16,7 +17,7 @@ go to `http://127.0.0.1:8000/admin/`
 
 ## start app locally for production testing
 `cd Documents/terry/projects/deploy-django-with-docker-compose`
-`docker-compose -f docker-compose-deploy.yml down --volumes`
+`docker-compose -f docker-compose-deploy.yml down --volumes --remove-orphans`
 `docker-compose -f docker-compose-deploy.yml build`
 `docker-compose -f docker-compose-deploy.yml up` add `-d` to the end to run in the background
 `docker-compose -f docker-compose-deploy.yml run --rm app sh -c "python manage.py createsuperuser"`
@@ -28,20 +29,15 @@ go to `http://127.0.0.1/admin/`
 `git clone https://github.com/tpmac1990/deploy-django-with-docker-compose.git`
 `cd deploy-django-with-docker-compose`
 `nano .env`
-DB_NAME=app   
-DB_USER=approotuser
-DB_PASS=superpassword123
-SECRET_KEY=secretkey12gh
-ALLOWED_HOSTS=Public_IPv4_DNS,hostname2,hostname3
-
+e.g. ALLOWED_HOSTS=Public_IPv4_DNS,hostname2,hostname3
 `docker-compose -f docker-compose-deploy.yml up -d`
 `docker-compose -f docker-compose-deploy.yml run --rm app sh -c "python manage.py createsuperuser"`
-
 ### updating deployed app
-commit changes to github
+commit changes to github, rebuild the image, create and start the container.
 `git pull origin`
-`docker-compose -f docker-compose-deploy.yml build app` app is the name of the service
-`docker-compose -f docker-compose-deploy.yml up --no-deps -d app` replace app with new version but not affect any dependencies
+`docker-compose -f docker-compose-deploy.yml down --volumes` shouldn't need to use this. be careful, this --volumes will clear the database.
+`docker-compose -f docker-compose-deploy.yml build`
+`docker-compose -f docker-compose-deploy.yml up --no-deps -d` replace with new version but not affect any dependencies
 
 ### docker commands
 logs: `docker-compose -f docker-compose-deploy.yml logs`
